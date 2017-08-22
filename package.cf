@@ -1,0 +1,1306 @@
+comment "--" ;
+-- entrypoints Subtype_indication;
+entrypoints Design_file;
+
+-- Keywords----------------------------------
+
+-- token BetterIdent (letter (letter | digit | '_')* ) ;
+-- token Character_literal ( '\'' ( digit | letter | '.' | '_' | '+' | '-' )* '\'' ) ; 
+-- token Extended_identifier ( '\\' ( digit | letter | '.' | '_' | '/' | '[' | ']' )* '\\' ) ; 
+
+
+-- token IntegerUl (digit (digit | '_')*) ;
+
+-- decimal_literal ::= integer [ . integer ] [ exponent ]
+token Decimal_literal (
+                        (digit (digit | '_')*) -- Integer
+                        ('.' (digit (digit | '_')*) | eps) -- . Integer
+                        ('E' ('+' | '-' | eps) (digit (digit | '_')*) | eps) -- Exponent
+                      );
+
+-- bit_string_literal ::=  base_specifier " bit_value "
+token Bit_string_literal (
+                           ('B' | 'O' | 'X' | 'b' | 'o' | 'x') -- base_specifier
+                           '"'
+                           (letter | digit)
+                           (letter | digit | '_')* -- Integer
+                           '"'
+                         );
+
+-- based_literal ::= base # based_integer [ . based_integer ] # [ exponent ]
+token Based_literal (
+                      (digit (digit | '_')*)  --base
+                      ('#' (digit | letter (digit | letter | '_')*)) -- # Based_Integer
+                      ('.' (digit | letter (digit | letter | '_')*) | eps) -- . Based_Integer
+                      '#' 
+                      ('E' ('+' | '-' | eps) (digit (digit | '_')*) | eps) -- Exponent
+                    );
+-- token GraphicIdent ('\\' char+ '\\' ) ;
+
+
+token GraphicIdent ('\\' 
+                   ( letter
+                   | digit
+                   | '\\' 
+                   | ["!\"#$%&'()*+,-./:;<=>?@[]^ _`{|}~"]
+                   )+
+                    '\\' 
+                   );
+
+
+token GraphicString ('"' 
+                    ( letter
+                    | digit
+                    | {"\\\""}
+                    | {"\"\""}
+                    | ["!\\#$%&'()*+,-./:;<=>?@[]^ _`{|}~"]
+                    )*
+                    '"' 
+                    );
+
+
+
+--Grammar------------------------------------
+
+--Main
+Design_file . Design_file ::= [Design_unit] ;
+Design_unit . Design_unit ::= Context_clause Library_unit ;
+terminator nonempty Design_unit "" ;
+rules Library_unit ::= Primary_unit | Secondary_unit ;
+rules Primary_unit ::= Entity_declaration | Configuration_declaration | Package_declaration ;
+rules Secondary_unit ::= Architecture_body | Package_body ;
+
+
+
+
+InitialVariable_declaration . Variable_declaration ::=
+  MaybeSharedText VariableText Identifier_list ":" Subtype_indication ":=" Association_element  ";" ;
+NoIntialVariable_declaration . Variable_declaration ::=
+  MaybeSharedText VariableText Identifier_list ":" Subtype_indication ";" ;
+
+-- rules Identifier ::= BetterIdent | Extended_identifier  ;
+-- rules Identifier ::= BetterIdent | GraphicIdent ;
+rules Identifier ::= Ident | GraphicIdent ;
+
+rules MaybeSimple_name ::= Identifier | ;
+
+separator nonempty Identifier "," ;
+Identifier_list . Identifier_list ::= [Identifier] ; --remove this later
+
+rules PackageText ::= "PACKAGE" | "package" ;
+rules MaybePackageText ::= PackageText | ;
+rules EndText ::= "END" | "end" ;
+rules IsText ::= "IS" | "is" ;
+rules MaybeIsText ::= IsText | ;
+rules InText ::= "IN" | "in" ;
+rules BodyText ::= "BODY" | "body" ;
+rules MaybeInText ::= InText | ;
+rules ConstantText ::= "CONSTANT" | "constant" ;
+rules MaybeConstantText ::= ConstantText | ;
+rules SubtypeText ::= "SUBTYPE" | "subtype" ;
+rules TypeText ::= "TYPE" | "type" ;
+rules SignalText ::= "SIGNAL" | "signal" ;
+rules MapText ::= "MAP" | "map" ;
+rules MaybeSignalText ::= SignalText |;
+rules RegisterText ::= "REGISTER" | "register" ;
+rules WaveformText ::= "WAVEFORM" | "Waveform" ;
+rules BusText ::= "BUS" | "bus" ;
+rules MaybeBusText ::= BusText |;
+rules SharedText ::= "SHARED" | "shared" ;
+rules MaybeSharedText ::= SharedText | ;
+rules VariableText ::= "VARIABLE" | "variable" ;
+rules MaybeVariableText ::= VariableText|;
+rules FileText ::= "FILE" | "file" ;
+rules AliasText ::= "ALIAS" | "alias" ;
+rules ComponentText ::= "COMPONENT" | "component" ;
+rules MaybeComponentText ::= ComponentText | ;
+rules AttributeText ::= "ATTRIBUTE" | "attribute" ;
+rules GuardedText ::= "GUARDED" | "guarded" ;
+rules MaybeGuardedText ::= GuardedText|;
+rules OfText ::= "OF" | "of" ;
+rules DisconnectText ::= "DISCONNECT" | "disconnect" ;
+rules AfterText ::= "AFTER" | "after" ;
+rules GroupText ::= "GROUP" | "group" ;
+rules UseText ::= "USE" | "use" ;
+rules ProcedureText ::= "PROCEDURE" | "procedure" ;
+rules PureText ::= "PURE" | "pure" ;
+rules ImpureText ::= "IMPURE" | "impure" ;
+rules FunctionText ::= "FUNCTION" | "function" ;
+rules ReturnText ::= "RETURN" | "return" ;
+rules DowntoText ::= "DOWNTO" | "downto" ;
+rules ToText ::= "TO" | "to" ;
+rules WithText ::= "WITH" | "with" ;
+rules UnitsText ::= "UNITS" | "units" ;
+rules RecordText ::= "RECORD" | "record" ;
+rules ArrayText ::= "ARRAY" | "array" ;
+rules OpenText ::= "OPEN" | "open" ;
+rules GenericText ::= "GENERIC" | "generic" ;
+rules PortText ::= "PORT" | "port" ;
+rules OthersText ::= "OTHERS" | "others" ;
+rules AllText ::= "ALL" | "all" ;
+rules RangeText ::= "RANGE" | "range" ;
+rules LibraryText ::= "LIBRARY" | "library" ;
+rules ConfigurationText ::= "CONFIGURATION" | "configuration" ;
+rules MaybeConfigurationText ::= ConfigurationText | ;
+rules PostponedText ::= "POSTPONED" | "postponed" ;
+rules MaybePostponedText ::= PostponedText | ;
+rules EntityText ::= "ENTITY" | "entity" ;
+rules MaybeEntityText ::= EntityText | ;
+rules ForText ::= "FOR" | "for" ;
+rules BeginText ::= "BEGIN" | "begin" ;
+rules AssertText ::= "ASSERT" | "assert" ;
+rules ReportText ::= "REPORT" | "report" ;
+rules ProcessText ::= "PROCESS" | "process" ;
+rules SeverityText ::= "SEVERITY" | "severity" ;
+rules WaitText ::= "WAIT" | "wait";
+rules MaybeWaitText ::= WaitText |;
+rules IfText ::= "IF" | "if";
+rules MaybeIfText ::= IfText |;
+rules ThenText ::= "THEN" | "then";
+rules MaybeThenText ::= ThenText |;
+rules ElsifText ::= "ELSIF" | "elsif";
+rules MaybeElsifText ::= ElsifText |;
+rules ElseText ::= "ELSE" | "else";
+rules CaseText ::= "CASE" | "case";
+rules MaybeCaseText ::= CaseText |;
+rules LoopText ::= "LOOP" | "loop";
+rules MaybeLoopText ::= LoopText |;
+rules WhenText ::= "WHEN" | "when";
+rules MaybeWhenText ::= WhenText |;
+rules NullText ::= "NULL" | "null";
+rules MaybeNullText ::= NullText |;
+rules OnText ::= "ON" | "on" ;
+rules UntilText ::= "UNTIL" | "until" ;
+rules TransportText ::= "TRANSPORT" | "transport" ;
+rules RejectText ::= "REJECT" | "reject" ;
+rules InertialText ::= "INERTIAL" | "inertial" ;
+rules WhileText ::= "WHILE" | "while" ;
+rules NextText ::= "NEXT" | "next" ;
+rules UnaffectedText ::= "UNAFFECTED" | "unaffected" ;
+rules ExitText ::= "EXIT" | "exit" ;
+rules SelectText ::= "SELECT" | "select" ;
+rules ArchitectureText ::= "ARCHITECTURE" | "architecture" ;
+rules GenerateText ::= "GENERATE" | "generate" ;
+rules BlockText ::= "BLOCK" | "block" ;
+rules NotText ::= "NOT" | "not" ;
+rules NewText ::= "NEW" | "new" ;
+rules AbsText ::= "ABS" | "abs" ;
+rules RemText ::= "REM" | "rem" ;
+rules ModText ::= "MOD" | "mod" ;
+
+rules ANDText ::= "AND" | "and" ;
+rules ORText ::= "OR" | "or" ;
+rules XORText ::= "XOR" | "xor" ;
+rules NANDText ::= "NAND" | "nand" ;
+rules NORText ::= "NOR" | "nor" ;
+rules XNORText ::= "XNOR" | "xnor" ;
+
+rules MaybeArchitectureText ::= ArchitectureText |;
+
+
+rules DirectionText ::= ToText | DowntoText ; 
+rules Subprogram_kind ::= ProcedureText | DowntoText ; 
+rules MaybeSubprogram_kind ::= Subprogram_kind | ;
+
+
+Package_declaration . Package_declaration ::= 
+                        PackageText Identifier IsText
+                                Package_declarative_part
+                        EndText MaybePackageText MaybeSimple_name ";" ; 
+
+
+Package_declarative_part . Package_declarative_part ::= [Package_declarative_item] ; 
+
+
+-- name ::= simple_name | operator_symbol | selected_name | indexed_name | slice_name | attribute_name
+rules Name ::= Identifier --simple_name
+  | GraphicString -- operator_symbol
+  | Selected_name  -- selected_name
+  -- | Indexed_name -- indexed_name
+  | Name "(" [Association_element] ")" "(" Discrete_range ")"  --Slice_name -- slice_name
+  | Char
+  | Bit_string_literal ; -- | Attribute_name ; -- attribute_name
+separator nonempty Name ",";
+
+
+  
+rules Package_declarative_item ::=
+  Subprogram_declaration
+  | Type_declaration
+  | Subtype_declaration
+  | Constant_declaration
+  | Signal_declaration
+  | Shared_variable_declaration
+  | File_declaration
+  | Alias_declaration
+  | Component_declaration
+  | Attribute_declaration
+  | Attribute_specification
+  | Disconnection_specification
+  | Use_clause
+  | Group_template_declaration
+  | Group_declaration ; 
+separator Package_declarative_item "" ;
+
+--Attribute_name
+-- Prefix "'" Identifier "(" Expression ")"  
+--                        | Prefix "'" Identifier 
+--                        | Prefix Signature "'" Identifier "(" Expression ")"
+--                        | Prefix Signature "'" Identifier 
+--                        | Ident "(" Expression ")"  -- Ident ccant be over ridde which causes isses with '
+--                        | Ident 
+--                        | Name "'" Name 
+--                        | Name "'" KeyWords
+
+                       
+rules Subtype_indication ::= Name 
+                           | Name Constraint 
+                           | Name Name
+                           | Name Name Constraint;
+
+Subprogram_declaration . Subprogram_declaration ::= Subprogram_specification ";" ; 
+rules Type_declaration ::= Full_type_declaration | Incomplete_type_declaration ;
+
+Full_type_declaration . Full_type_declaration ::= TypeText Identifier IsText Type_definition ";" ;
+
+Subtype_declaration . Subtype_declaration ::= SubtypeText Identifier IsText Subtype_indication ";" ; 
+-- Subtype_declaration . Subtype_declaration ::= SubtypeText Identifier IsText Name RangeText Simple_name "meh" Simple_name ";" ; 
+separator Subtype_indication ":" ;
+
+-- InitialAssigmentConstant_declaration . Constant_declaration ::= 
+--     ConstantText Identifier_list ":" Subtype_indication ":=" Expression ";" ; 
+-- NoInitialAssignmentConstant_declaration . Constant_declaration ::= 
+--     ConstantText Identifier_list ":" Subtype_indication ";" ;
+
+-- constant_declaration ::= constant identifier_list : subtype_indication [ := expression ] ;
+Constant_declaration . Constant_declaration ::= 
+  ConstantText [Identifier] ":" Subtype_indication MaybeExpression ";" ; 
+-- Constant_declarationFunction . Constant_declaration ::= 
+--   ConstantText [Identifier] ":" Subtype_indication ":=" Prefix ";" ; 
+
+-- InitialSignal_declaration . Signal_declaration ::= 
+--   SignalText Identifier_list ":" Subtype_indication Signal_kind  ":=" Expression ";" ; 
+-- NoInitialSignal_declaration . Signal_declaration ::= 
+--   SignalText Identifier_list ":" Subtype_indication Signal_kind  ";" ; 
+rules Signal_kind ::= RegisterText | BusText | ;
+
+-- signal_declaration ::= signal identifier_list : subtype_indication [ signal_kind ] [ := expression ] ;
+Signal_declaration . Signal_declaration ::= 
+ SignalText [Identifier] ":" Subtype_indication Signal_kind MaybeExpression ";" ;
+-- signal_declaration ::= signal identifier_list : subtype_indication [ signal_kind ] [ := expression ] ;
+Signal_declarationFunction . Signal_declaration ::= 
+ SignalText [Identifier] ":" Subtype_indication Signal_kind ":=" Prefix ";" ;
+
+Shared_variable_declaration . Shared_variable_declaration ::= Variable_declaration ;
+
+File_declaration . File_declaration ::= FileText Identifier_list ":" Subtype_indication MaybeFile_open_information ; --Make File_open_information optional
+
+Alias_declarationSubtype . Alias_declaration ::= AliasText DesignatorTag ":" Subtype_indication IsText Name MaybeSignature ";" ;
+Alias_declaration . Alias_declaration ::= AliasText DesignatorTag IsText Name MaybeSignature ";" ;
+
+rules MaybeSignature ::= Signature |;
+
+Component_declaration . Component_declaration ::=
+  ComponentText Identifier MaybeIsText
+    MaybeLocal_generic_clause 
+    MaybeLocal_port_clause 
+  EndText MaybeComponentText MaybeSimple_name ";" ;
+
+Local_generic_clause . Local_generic_clause ::= Generic_clause ;
+rules MaybeLocal_generic_clause ::= Local_generic_clause|;
+rules MaybeLocal_port_clause ::= Local_port_clause|;
+Local_port_clause . Local_port_clause ::= Port_clause ;
+
+Attribute_declaration . Attribute_declaration ::= AttributeText Identifier ":" Name ";" ;
+
+Attribute_specification . Attribute_specification ::= 
+  AttributeText Identifier OfText Entity_specification IsText Expression ";" ;
+
+Entity_specification . Entity_specification ::= Entity_name_list ":" Entity_class ;
+
+Disconnection_specification . Disconnection_specification ::=
+  DisconnectText Guarded_signal_specification AfterText Expression ";" ;
+
+Guarded_signal_specification . Guarded_signal_specification ::= Guarded_signal_list ":" Name ;
+Guarded_signal_list . Guarded_signal_list ::= Signal_list;
+
+Selected_name . Selected_name ::= Prefix "." Suffix ;
+separator nonempty Selected_name "," ;
+
+Use_clause . Use_clause ::= UseText [Selected_name] ";" ;
+separator Use_clause "" ;
+
+Group_template_declaration . Group_template_declaration ::= GroupText Identifier IsText "(" Entity_class_entry_list ")" ";" ;
+
+rules Entity_name_list ::= [ Entity_designator ] 
+  | OthersText
+  | AllText ;
+
+Entity_designator . Entity_designator ::= DesignatorTag MaybeSignature ;
+
+-- rules Entity_tag ::= Identifier | Char | String ; 
+ rules DesignatorTag ::= Identifier | Char | GraphicString ; -- Character_literal
+
+separator nonempty Entity_designator "";
+
+Group_declaration . Group_declaration ::=
+  GroupText Identifier ":" Group_template_name "(" [Name] ")" ";" ;
+Group_template_name . Group_template_name ::= Name ; 
+
+-- rules Prefix ::= Name | Function_call ;
+rules Prefix ::= Name | Name "(" [Association_element] ")" ; --Function_call ;
+
+rules Suffix ::=
+  Identifier --[Hierarchy_name] -- was Simple_name but that did not cover '.'
+  | Char 
+  | GraphicString
+  | AllText ; 
+-- String_literal . String_literal ::= String ;
+
+-- Signal_name . Signal_name ::= Name ;
+-- separator nonempty Signal_name ",";
+
+-- Function_call . Function_call ::= Ident "(" Actual_parameter_part ")" ;
+-- NoParametersFunction_call . Function_call ::= Name ;
+
+-- Actual_parameter_part . Actual_parameter_part ::= [Association_element] ;
+
+
+-- association_element ::= [ formal_part => ] actual_part
+-- rules Association_element ::= 
+--    Name "=>" Actual_designator 
+--  | Name Name "=>" Actual_designator 
+--  | Actual_designator 
+--  | "(" [Name] ")"
+--  | Name "'" Name
+--  | Name "'" KeyWords
+--  | Name "=>" Name 
+--  | Name Name "=>" Name "(" Actual_designator ")" 
+--  | Name "=>" Name "(" Actual_designator ")" 
+--  | Name 
+--  | Name "(" Actual_designator ")" 
+--  | Name "." Prefix
+--  | Name "(" Actual_designator ")" "." Prefix
+--  | Name Name "=>" Name "(" Actual_designator ")" "." Prefix
+--  | Name "=>" Name "(" Actual_designator ")" "." Prefix ;
+
+-- actual_part ::= actual_designator | function_name ( actual_designator ) | type_mark ( actual_designator )
+-- rules Actual_part ::= Actual_designator | Name "(" Actual_designator ")" ;
+
+-- Actual_designator ::= expression | signal_name | variable_name | file_name | OPEN
+-- rules Actual_designator ::= Expression | Name | "open" ;
+-- DirectionExpression  . Expression ::= Relation DirectionText Expression ; -- Temp Maybe
+-- Attribute_name | Simple_expression DirectionText Simple_expression
+-- rules Actual_designator ::= Expression | Name | OpenText ;
+
+
+
+
+Entity_class_entry_list . Entity_class_entry_list ::= [ Entity_class_entry ] ;
+
+rules MaybeECArrows ::= "<>" |;
+Entity_class_entry . Entity_class_entry ::= Entity_class MaybeECArrows ; 
+separator nonempty Entity_class_entry "," ;
+
+rules Entity_class ::=
+  "ENTITY"       | "ARCHITECTURE"  | "CONFIGURATION"
+  | "PROCEDURE"  | "FUNCTION"       | "PACKAGE"
+  | "TYPE"       | "SUBTYPE"       | "CONSTANT"
+  | "SIGNAL"     | "VARIABLE"       | "COMPONENT"
+  | "LABEL"       | "LITERAL"       | "UNITS"
+  | "GROUP"       | "FILE" 
+  | "entity"       | "architecture"  | "configuration"
+  | "procedure"  | "function"       | "package"
+  | "type"       | "subtype"       | "constant"
+  | "signal"     | "variable"       | "component"
+  | "label"       | "literal"       | "units"
+  | "group"       | "file" ;
+
+
+-- Group_constituent_list . Group_constituent_list ::= [Group_constituent] ;
+-- rules Group_constituent ::= Name | Char; -- Idk hat this is for | Character_literal ;
+-- separator nonempty Group_constituent ",";
+
+-- rules Designator ::= Identifier | String ; 
+
+rules Subprogram_specification ::= ProcedureText DesignatorTag Formal_parameter_listPar 
+                                 | PureImpure FunctionText DesignatorTag Formal_parameter_listPar ReturnText Name ;
+-- Formal_parameter_listPar . Formal_parameter_listPar ::= "(" Formal_parameter_list ")" ;
+Formal_parameter_listPar . Formal_parameter_listPar ::= "(" [Interface_declaration] ")" ;
+NoFormal_parameter_listPar . Formal_parameter_listPar ::= ;
+rules  PureImpure ::= PureText | ImpureText | ;
+-- Formal_parameter_list . Formal_parameter_list ::= Parameter_interface_list ;
+-- Parameter_interface_list . Parameter_interface_list ::= Interface_list ; 
+
+-- Interface_list . Interface_list ::= [Interface_element] ;
+-- Interface_element . Interface_element ::= Interface_declaration ;
+separator nonempty Interface_declaration ";";
+
+
+rules Interface_declaration ::=
+  Interface_constant_declaration
+  | Interface_signal_declaration
+  | Interface_variable_declaration
+  | Interface_file_declaration ;
+
+Interface_constant_declaration . Interface_constant_declaration ::=
+  MaybeConstantText Identifier_list ":" MaybeInText Subtype_indication MaybeStatic_expressionAssign ;
+
+-- Static_expressionAssign . Static_expressionAssign ::= ":=" Static_expression ;
+rules MaybeStatic_expressionAssign ::= ":=" Expression |; 
+-- Static_expression . Static_expression ::= Expression ; 
+
+rules Signal_list ::=
+  [Name]
+  | OthersText
+  | AllText ;
+
+
+Interface_signal_declaration . Interface_signal_declaration ::=
+  MaybeSignalText Identifier_list ":" MaybeMode Subtype_indication MaybeBusText MaybeStatic_expressionAssign;
+rules Mode ::= "IN" | "OUT" | "INOUT" | "BUFFER" | "LINKAGE" | "in" | "out" | "inout" | "buffer" | "linkage";
+rules MaybeMode ::= Mode |;
+
+Interface_variable_declaration . Interface_variable_declaration ::=
+  MaybeVariableText Identifier_list ":" MaybeMode Subtype_indication MaybeStatic_expressionAssign ;
+
+Interface_file_declaration . Interface_file_declaration ::= FileText Identifier_list ":" Subtype_indication ;
+
+
+rules MaybeConstraint ::= Constraint |;
+
+RangeConstraint . Constraint ::= RangeText Range ;
+-- IndexConstraint . Constraint ::= "(" [Discrete_range] ")" ;
+IndexConstraint . Constraint ::= "(" [Association_element] ")" ;
+
+-- Range_constraint . Range_constraint ::= RangeText Range ;
+
+
+RangeAttributeName . Range ::= Attribute_name ;
+RangeExpDirExp . Range ::= Simple_expression DirectionText Simple_expression ;
+
+
+-- Index_constraint . Index_constraint ::= "(" [Discrete_range] ")" ;
+rules Discrete_range ::= Subtype_indication | Range ;
+separator nonempty Discrete_range ",";
+
+
+-- rules Sign ::= "+" | "-" | ; 
+-- PlusSign .  Sign ::= "+" ; 
+-- NegSign . Sign ::= "-" ; 
+-- rules Simple_expression ::= "-" Term | Term ;
+rules Simple_expression ::= Name "(" [Association_element] ")"
+                          | Term [AddOps]
+                          | "-" Term [AddOps]
+                          | "+" Term [AddOps]
+                          ;
+
+-- Simple_expression . Simple_expression ::= Sign Term [AddOps] ;
+
+
+
+
+AddAddOps. AddOps ::= "+" Term ;
+SubAddOps. AddOps ::= "-" Term ;
+AndAddOps. AddOps ::= "&"  Term ;
+-- DirectionAddOps. AddOps ::= DirectionText Term ;
+separator AddOps "";
+
+
+--                        | Prefix Signature "'" Attribute_designator ;
+rules Attribute_name ::= Prefix "'" Identifier "(" Expression ")"  
+                       | Prefix "'" Identifier 
+                       | Prefix Signature "'" Identifier "(" Expression ")"
+                       | Prefix Signature "'" Identifier 
+                       | Ident "(" Expression ")"  -- Ident ccant be over ridde which causes isses with '
+                       | Ident 
+                       | Name "'" Name 
+                       | Name "'" KeyWords ;
+
+
+ -- association_element ::= [ formal_part => ] actual_part
+-- rules Association_element ::=  
+--    "(" [Name] ")"
+-- --  | "(" [Name] ")" "." Prefix
+--  | Name "'" Name
+--  | Name "'" KeyWords
+--  | Name "=>" Name 
+--  | Name 
+-- --  | Name "." Prefix
+--  | Name "=>" Expression 
+--  | Name Name "=>" Expression 
+--  | Expression 
+--  | Name Name "=>" Name "(" Expression ")" 
+--  | Name "=>" Name "(" Expression ")" 
+--  | Name "(" Expression ")" 
+-- --  | Name "(" Expression ")" "." Prefix
+-- --  | Name Name "=>" Name "(" Expression ")" "." Prefix
+-- --  | Name "=>" Name "(" Expression ")" "." Prefix 
+--  | Name "=>" OpenText 
+--  | Name Name "=>" OpenText 
+--  | OpenText 
+--  | Name Name "=>" Name "(" OpenText ")" 
+--  | Name "=>" Name "(" OpenText ")" 
+--  | Name "(" OpenText ")" 
+-- --  | Name "(" OpenText ")" "." Prefix
+-- --  | Name Name "=>" Name "(" OpenText ")" "." Prefix
+-- --  | Name "=>" Name "(" OpenText ")" "." Prefix 
+--  | Name Name "=>" Name 
+--  | Name Name "=>" Name "(" Name ")" 
+--  | Name "=>" Name "(" Name ")" ;
+-- --  | Name Name "=>" Name "(" Name ")" "." Prefix
+-- --  | Name "=>" Name "(" Name ")" "." Prefix ;
+
+
+
+-- Time_expression . Time_expression ::= Expression ;
+
+-- expression ::= relation { and relation } 
+--              | relation { or relation } 
+--              | relation { xor relation } 
+--              | relation [ nand relation ] 
+--              | relation [ nor relation ] 
+--              | relation { xnor relation }
+rules Association_element ::= Expression DirectionText Association_element 
+                            | Association_element "." Association_element 
+                            | OthersText "=>" Association_element 
+                            | Association_element "=>" Association_element 
+                            -- | Association_element "<=" Association_element 
+                            | Association_element "'" KeyWords 
+                            | Association_element "'" Name 
+                            | Expression ;
+separator nonempty Association_element ",";
+                            
+
+-- DirectionExpression  . Expression ::= Relation DirectionText Expression ; -- Temp Maybe
+-- FunExpression  . Expression ::= Name "(" [Association_element] ")" ; 
+
+AndExpression   . Expression ::= Relation ANDText  Expression ;
+OrExpression    . Expression ::= Relation ORText   Expression ;
+XorExpression   . Expression ::= Relation XORText  Expression ;
+NandExpression  . Expression ::= Relation NANDText Expression ;
+NorExpression   . Expression ::= Relation NORText  Expression ;
+XnorExpression  . Expression ::= Relation XNORText Expression ;
+SingleExpression. Expression ::= Relation;
+separator nonempty Expression ",";
+
+-- relation ::= shift_expression [ relational_operator shift_expression ]
+-- relational_operator ::= = | /= | < | <= | > | >=
+EqualRelation  . Relation ::= Shift_expression "="  Relation ;
+NotEqRelation  . Relation ::= Shift_expression "/=" Relation ;
+LessTRelation  . Relation ::= Shift_expression "<"  Relation ;
+LessERelation  . Relation ::= Shift_expression "<=" Relation ;
+GreatTRelation . Relation ::= Shift_expression ">"  Relation ;
+GreatEqRelation. Relation ::= Shift_expression ">=" Relation ;
+SingleRelation . Relation ::= Shift_expression;
+
+-- shift_expression ::= simple_expression
+SLLShift_expression. Shift_expression    ::= Simple_expression "SLL"  Shift_expression;
+SRLShift_expression. Shift_expression    ::= Simple_expression "SRL" Shift_expression;
+SLAShift_expression. Shift_expression    ::= Simple_expression "SLA"  Shift_expression;
+SRAShift_expression. Shift_expression    ::= Simple_expression "SRA" Shift_expression;
+ROLShift_expression. Shift_expression    ::= Simple_expression "ROL"  Shift_expression;
+RORShift_expression. Shift_expression    ::= Simple_expression "ROR" Shift_expression;
+SingleShift_expression. Shift_expression ::= Simple_expression;
+
+-- simple_expression ::= [ sign ] term { adding_operator term }
+
+-- term ::= factor { multiplying_operator factor }
+MulTerm. Term ::= Factor "*"   Term;
+DivTerm. Term ::= Factor "/"   Term;
+ModTerm. Term ::= Factor ModText Term;
+RemTerm. Term ::= Factor RemText Term;
+SingleTerm. Term ::= Factor ;
+
+-- factor ::= primary [ ** primary ] | ABS primary | NOT primary
+PowFactor. Factor ::= Primary "**" Factor;
+AbsFactor. Factor ::= AbsText Primary;
+NotFactor. Factor ::= NotText Primary;
+SingleFactor. Factor ::= Primary ;
+
+
+
+-- primary ::= name | literal | aggregate | function_call | qualified_expression 
+-- | type_conversion | allocator | ( expression ) 
+rules Primary ::= Decimal_literal 
+                | Based_literal
+                | Physical_literal 
+                | Name
+                | "(" [Element_association] ")" | Name Name | Name "(" [Association_element] ")" ;
+                -- | "(" [Association_element] ")" ;
+-- rules Primary ::=
+--    Ident "(" Actual_parameter_part ")"
+--   | Literal
+--   | Aggregate
+--   | Qualified_expression
+--   | Type_conversion
+--   | Allocator
+--   | Ident ;
+separator nonempty Primary "**";
+
+
+-- rules Literal ::=
+--   Numeric_literal
+--   | Enumeration_literal
+--   | String
+--   | Bit_string_literal
+--   | NullText ;
+-- literal ::= numeric_literal | enumeration_literal | string_literal | bit_string_literal | NULL
+rules Literal ::= Decimal_literal 
+                | Bit_string_literal
+                | Physical_literal 
+                | Name ; --Enumeration_literal ;
+
+-- numeric_literal ::= abstract_literal | physical_literal
+
+-- abstract_literal ::= decimal_literal | based_literal
+
+-- physical_literal ::= [ abstract_literal ] unit_name
+rules Physical_literal ::= Decimal_literal Name 
+                         | Based_literal Name;
+
+-- Unit_name. Unit_name ::= Name ;
+-- rules Enumeration_literal ::= Identifier | Char; 
+-- separator nonempty Enumeration_literal "," ;
+
+
+-- String_literal . String_literal ::= String ;
+
+-- Aggregate . Aggregate ::= "(" [Element_association] ")" ;
+separator nonempty Element_association "," ;
+
+rules Element_association ::= Choice "=>" Expression | Expression;
+
+
+rules Qualified_expression ::= Name "'" "(" [Element_association] ")";
+
+Type_conversion . Type_conversion ::= Name "(" Expression ")";
+
+rules Allocator ::= NewText Subtype_indication | NewText Qualified_expression ;
+
+Indexed_name . Indexed_name ::= Prefix "(" [Expression] ")" ;
+
+Slice_name . Slice_name ::=  Prefix "(" Discrete_range ")" ;
+
+
+EmptySignature . Signature ::= ;
+TypeMarkListSignature . Signature ::= [ Name ] ;
+ReturnSignature . Signature ::= ReturnText Name ;
+TypeMarkListReturnSignature . Signature ::= [ Name ] ReturnText Name ;
+
+
+
+rules Type_definition ::=
+  Scalar_type_definition
+  | Composite_type_definition
+  | Access_type_definition
+  | File_type_definition;
+
+rules Scalar_type_definition ::=
+  Enumeration_type_definition   -- | Integer_type_definition
+  | Floating_type_definition    | Physical_type_definition ;
+
+Enumeration_type_definition . Enumeration_type_definition ::= "(" [Name] ")" ;
+-- Integer_type_definition . Integer_type_definition ::=  RangeText Range ;
+Floating_type_definition . Floating_type_definition ::=  RangeText Range ;
+
+Physical_type_definition . Physical_type_definition ::=
+   RangeText Range
+    UnitsText
+      Base_unit_declaration
+      MaybeSecondary_unit_declaration 
+    EndText UnitsText MaybeSimple_name ;
+
+Base_unit_declaration . Base_unit_declaration ::= Identifier ";" ;
+
+-- Secondary_unit_declaration . Secondary_unit_declaration ::= Identifier "=" Physical_literal ";" ;
+
+rules MaybeSecondary_unit_declaration ::= Identifier "=" Physical_literal ";" |;
+
+rules Composite_type_definition ::= Array_type_definition | Record_type_definition ;
+
+rules Array_type_definition ::= Unconstrained_array_definition | Constrained_array_definition ;
+
+Record_type_definition . Record_type_definition ::=
+  RecordText
+    [Element_declaration]
+  EndText RecordText MaybeSimple_name ; 
+
+Element_declaration . Element_declaration ::= Identifier_list ":" Element_subtype_definition ";" ; 
+separator nonempty Element_declaration "" ;
+
+rules MaybeElement_declaration ::= Element_declaration |;
+Element_subtype_definition . Element_subtype_definition ::= Subtype_indication ; 
+
+
+Access_type_definition . Access_type_definition ::= "ACCESS" Subtype_indication ;
+
+File_type_definition . File_type_definition ::= "FILE"  "OF" Name ;
+
+Unconstrained_array_definition . Unconstrained_array_definition ::=
+  ArrayText "(" [Index_subtype_definition] ")"
+    OfText Subtype_indication ;
+-- Element_subtype_indication . Element_subtype_indication ::= Subtype_indication;
+
+Index_subtype_definition . Index_subtype_definition ::= Name RangeText "<>" ;
+separator nonempty Index_subtype_definition "," ;
+
+Constrained_array_definition . Constrained_array_definition ::= ArrayText "(" [Discrete_range] ")" OfText Subtype_indication ;
+
+Incomplete_type_declaration . Incomplete_type_declaration ::= TypeText Identifier ";" ;
+ 
+-- Attribute_designator . Attribute_designator ::= Identifier ; --Attribute_simple_name ;
+-- Attribute_simple_name . Attribute_simple_name ::= Identifier;
+
+File_open_information . File_open_information ::= MaybeOpenFile IsText Expression ;
+rules MaybeFile_open_information ::= File_open_information |;
+MaybeOpenFile . MaybeOpenFile ::= OpenText Expression ;
+-- File_logical_name . File_logical_name ::= Expression ;
+-- String_expression . String_expression ::= Expression ;
+-- File_open_kind_expression . File_open_kind_expression ::= Expression ; 
+
+-- rules Alias_designator ::= Identifier | Char | String ; -- Character_literal
+
+Generic_clause . Generic_clause ::= GenericText "(" [Interface_declaration] ")" ";" ;
+-- Generic_list . Generic_list ::= Generic_interface_list ;
+-- Generic_interface_list . Generic_interface_list ::= Interface_list ; 
+
+Port_clause . Port_clause ::=
+  PortText "(" [Interface_declaration] ")" ";" ; 
+-- Port_list . Port_list ::= Port_interface_list ;
+-- Port_list . Port_list ::= Port_interface_list ;
+-- Port_interface_list . Port_interface_list ::= Interface_list ;
+
+
+
+Library_clause . Library_clause ::= LibraryText [Name] ";" ;
+
+-- Logical_name . Logical_name ::= Identifier;
+
+-- separator nonempty Logical_name "," ;
+-- Logical_name_list . Logical_name_list ::= [Logical_name] ;
+
+rules Context_item ::= Library_clause | Use_clause ;
+Context_clause . Context_clause ::= [ Context_item ] ;
+separator Context_item "" ;
+
+
+Configuration_declaration . Configuration_declaration ::=
+  ConfigurationText Identifier OfText Name IsText
+    Configuration_declarative_part
+    Block_configuration
+  EndText MaybeConfigurationText MaybeConfiguration_simple_name ";" ;
+
+Configuration_simple_name . Configuration_simple_name ::= Identifier;
+rules MaybeConfiguration_simple_name ::= Configuration_simple_name |;
+
+rules Configuration_declarative_item ::= Use_clause | Attribute_specification | Group_declaration ; 
+separator Configuration_declarative_item "" ;
+
+Configuration_declarative_part . Configuration_declarative_part ::= [Configuration_declarative_item] ;
+
+Block_configuration . Block_configuration ::=
+  ForText Block_specification
+    [Use_clause]
+    [Configuration_item] 
+  EndText ForText ";" ;
+
+rules Block_specification ::=
+  Name
+  | Identifier "(" Index_specification ")" ;
+
+rules Configuration_item ::=
+  Block_configuration
+  | Component_configuration ;
+separator Configuration_item "" ;
+
+
+rules Index_specification ::= Discrete_range | Expression ;
+    
+rules Entity_aspect ::=
+    EntityText Name "(" Identifier ")"
+  | EntityText Name
+  | ConfigurationText Name
+  | OpenText ;
+
+
+Component_configuration . Component_configuration ::=
+  ForText Component_specification
+     MaybeBinding_indication
+     MaybeBlock_configuration
+  EndText ForText ";" ;
+
+Component_specification . Component_specification ::= Instantiation_list ":" Name ;
+
+rules MaybeBinding_indication ::= Binding_indication ";"| ;
+rules Binding_indication ::= UseText Entity_aspect Generic_map_aspect Port_map_aspect
+                            | UseText Entity_aspect Generic_map_aspect
+                            | UseText Entity_aspect Port_map_aspect
+                            | Generic_map_aspect Port_map_aspect
+                            | Generic_map_aspect
+                            | UseText Entity_aspect
+                            | Port_map_aspect
+                            |;
+
+rules MaybeBlock_configuration ::= Block_configuration| ;
+
+rules Instantiation_list ::=
+  [Identifier] 
+  | OthersText
+  | AllText ;
+
+-- Instantiation_label . Instantiation_label ::= Label ;
+-- separator nonempty Instantiation_label "," ;
+
+-- Component_name . Component_name ::= Name ;
+
+Generic_map_aspect . Generic_map_aspect ::= GenericText MapText "(" [Association_element] ")" ;
+rules MaybeGeneric_map_aspect ::= Generic_map_aspect | ;
+
+Port_map_aspect . Port_map_aspect ::= PortText MapText "(" [Association_element] ")" ;
+rules MaybePort_map_aspect ::= Port_map_aspect | ;
+
+-- Label . Label ::= Identifier ;
+
+Entity_declaration . Entity_declaration ::=
+  EntityText Identifier IsText
+    Entity_header
+    Entity_declarative_part
+    MaybeEntity_statement_part
+  EndText MaybeEntityText MaybeEntity_simple_name ";" ;
+
+rules MaybeEntity_simple_name ::= Identifier |;
+
+rules MaybeEntity_statement_part ::= BeginText [Entity_statement] |;
+
+
+Entity_header . Entity_header ::= MaybeFormal_generic_clause MaybeFormal_port_clause ;
+Formal_generic_clause . Formal_generic_clause ::= Generic_clause ;
+rules MaybeFormal_generic_clause ::= Formal_generic_clause | ;
+Formal_port_clause . Formal_port_clause ::= Port_clause ;
+rules MaybeFormal_port_clause ::= Formal_port_clause | ;
+
+Entity_declarative_part . Entity_declarative_part ::= [ Entity_declarative_item ] ;
+
+
+rules Entity_statement ::=
+  Concurrent_assertion_statement
+  | Concurrent_procedure_call_statement
+  | Process_statement ;
+separator Entity_statement "" ;
+
+-- Concurrent_procedure_call_statement . Concurrent_procedure_call_statement ::=
+--   MaybePostponedText Prefix ";" ;
+rules Concurrent_procedure_call_statement ::= 
+    Prefix ";" 
+  | Identifier ":" PostponedText Prefix ";" 
+  | Identifier ":" MaybeLabel Prefix ";" 
+  | PostponedText Prefix ";" 
+  ;
+LabeledConcurrent_procedure_call_statement . Concurrent_procedure_call_statement ::= 
+    Identifier ":" Concurrent_procedure_call_statement ;
+
+Procedure_call_statement . Procedure_call_statement ::= MaybeLabel Prefix ";" ;
+
+-- Procedure_call . Procedure_call ::= Name ;
+-- ParameterProcedure_call .  Procedure_call ::= Name "(" [Association_element] ")" ;
+-- Procedure_name . Procedure_name ::= Name ;
+-- rules MaybeActual_parameter_part ::= "(" Actual_parameter_part ")" ;
+
+
+rules Entity_declarative_item ::=
+  Subprogram_declaration
+  | Subprogram_body
+  | Type_declaration
+  | Subtype_declaration
+  | Constant_declaration
+  | Signal_declaration
+  | Shared_variable_declaration
+  | File_declaration
+  | Alias_declaration
+  | Attribute_declaration
+  | Attribute_specification
+  | Disconnection_specification
+  | Use_clause
+  | Group_template_declaration
+  | Group_declaration ;
+
+separator Entity_declarative_item "" ;
+
+
+Concurrent_assertion_statement . Concurrent_assertion_statement ::= MaybePostponedText Assertion ";" ;
+LabeledConcurrent_assertion_statement . Concurrent_assertion_statement ::= Identifier ":" Concurrent_assertion_statement ;
+-- rules MaybeLabel ::= | Label ":" ;
+NoLabel . MaybeLabel ::= ;
+YesLabelColon . MaybeLabel ::= Identifier ":" ;
+YesLabel . MaybeLabel ::= Identifier;
+
+Assertion . Assertion ::= AssertText Expression MaybeReport MaybeSeverity ;
+rules MaybeReport ::= ReportText Expression |;
+rules MaybeSeverity ::= SeverityText Expression |;
+
+
+
+Subprogram_body . Subprogram_body ::=
+  Subprogram_specification IsText
+    Subprogram_declarative_part
+  BeginText
+    [Sequential_statement]
+  EndText MaybeSubprogram_kind MaybeDesignator ";" ; 
+rules MaybeDesignator ::= DesignatorTag |;
+
+rules MaybeSensitivity_list ::= "(" Sensitivity_list ")" |; 
+
+Process_statement . Process_statement ::=
+  MaybeLabel
+    MaybePostponedText ProcessText MaybeSensitivity_list MaybeIsText
+      [Subprogram_declarative_item]
+    BeginText
+      [Sequential_statement]
+    EndText MaybePostponedText ProcessText MaybeLabel ";" ;
+LabeledProcess_statement . Process_statement ::= Identifier ":" Process_statement ;
+
+
+Subprogram_declarative_part . Subprogram_declarative_part ::= [Subprogram_declarative_item];
+
+
+
+
+rules Subprogram_declarative_item ::=
+  Subprogram_declaration
+  | Subprogram_body
+  | Type_declaration
+  | Subtype_declaration
+  | Constant_declaration
+  | Variable_declaration
+  | File_declaration
+  | Alias_declaration
+  | Attribute_declaration
+  | Attribute_specification
+  | Use_clause
+  | Group_template_declaration
+  | Group_declaration ;
+separator Subprogram_declarative_item "" ;
+
+rules Sequential_statement ::=
+  Wait_statement | Concurrent_procedure_call_statement
+  | Assertion_statement
+  | Report_statement
+  | Signal_assignment_statement
+  | Variable_assignment_statement
+  | Procedure_call_statement
+  | If_statement
+  | Case_statement
+  | Loop_statement
+  | Next_statement
+  | Exit_statement
+  | Return_statement
+  | Null_statement
+  ;
+separator Sequential_statement "" ;
+
+rules Process_declarative_item ::=
+  Subprogram_declaration
+  | Subprogram_body
+  | Type_declaration
+  | Subtype_declaration
+  | Constant_declaration
+  | Variable_declaration
+  | File_declaration
+  | Alias_declaration
+  | Attribute_declaration
+  | Attribute_specification
+  | Use_clause
+  | Group_template_declaration
+  | Group_declaration ;
+separator Process_declarative_item "" ;
+
+Wait_statement . Wait_statement ::= 
+  MaybeLabel WaitText MaybeSensitivity_clause MaybeCondition_clause MaybeTimeout_clause ";" ;
+Sensitivity_clause . Sensitivity_clause ::= OnText Sensitivity_list ;
+Sensitivity_list . Sensitivity_list ::= [Name] ;
+
+rules MaybeSensitivity_clause ::= Identifier |; 
+Condition_clause . Condition_clause ::= UntilText Expression;
+rules MaybeCondition_clause ::=  Condition_clause |;
+Timeout_clause . Timeout_clause ::= ForText Expression;
+-- Time_expression . Time_expression ::= Expression ;
+rules MaybeTimeout_clause ::=  Timeout_clause |;
+
+Assertion_statement . Assertion_statement ::= Assertion ";" ;
+LabeledAssertion_statement . Assertion_statement ::= Identifier ":" Assertion_statement ;
+
+Report_statement . Report_statement ::=
+  MaybeLabel
+    ReportText Expression
+      MaybeSevExp ";" ;
+rules MaybeSevExp ::= SeverityText Expression |;
+
+-- rules Target ::= Name | "(" [Element_association] ")" ;
+rules Target ::= Prefix | "(" [Element_association] ")" ;
+
+Signal_assignment_statement . Signal_assignment_statement ::= Target "<=" MaybeDelay_mechanism Waveform ";" ;
+LabeledSignal_assignment_statement . Signal_assignment_statement ::= Identifier ":" Signal_assignment_statement ;
+FunctionCall . Signal_assignment_statement ::= Target;
+
+Variable_assignment_statement . Variable_assignment_statement ::= Target  ":=" Expression ";" ; 
+LabeledVariable_assignment_statement . Variable_assignment_statement ::= Identifier ":" Variable_assignment_statement ;
+
+
+rules Delay_mechanism ::=
+  TransportText
+  | MaybeRejectTime InertialText ; 
+rules MaybeRejectTime ::= RejectText Expression| ; 
+rules MaybeDelay_mechanism ::= Delay_mechanism | ; 
+
+If_statement . If_statement ::=
+  MaybeLabel
+    IfText Expression ThenText
+      [Sequential_statement] ---Sequence_of_statements
+    [ELSEIFStatement]
+    MaybeELSEStatement
+    EndText IfText MaybeLabel ";";
+ELSEIFStatement . ELSEIFStatement ::= ElsifText Expression ThenText [Sequential_statement] ;
+separator ELSEIFStatement "" ;
+rules MaybeELSEStatement ::= ElseText [Sequential_statement] |;
+
+-- Sequence_of_statements . Sequence_of_statements ::= [Sequential_statement];
+
+Case_statement . Case_statement ::=
+  MaybeLabel
+    CaseText Expression IsText
+      [Case_statement_alternative]
+    EndText CaseText MaybeLabel ";" ;
+
+rules Choice ::=
+  Simple_expression
+  | Discrete_range
+  | Identifier
+  | OthersText ;
+separator nonempty Choice "" ;
+
+
+Case_statement_alternative . Case_statement_alternative ::=
+  WhenText [Choice] "=>" [Sequential_statement] ;
+separator nonempty Case_statement_alternative "" ;
+
+rules Iteration_scheme ::= WhileText Association_element | ForText Identifier InText Discrete_range ;
+
+-- Condition . Condition ::= Boolean_expression ;
+-- Boolean_expression .Boolean_expression ::= Expression ;
+
+
+Loop_statement . Loop_statement ::=
+  MaybeLabel
+    Iteration_scheme LoopText
+      [Sequential_statement]
+    EndText LoopText MaybeLabel ";" ;
+
+rules MaybeWhenCondition ::= WhenText Association_element |;
+-- rules MaybeExpression ::= "(" Expression ")" | ":=" Expression | Expression |;
+rules MaybeExpression ::= "(" Association_element ")" 
+                        | ":=" Association_element 
+                        | Association_element 
+                        |;
+
+Next_statement . Next_statement ::=
+  MaybeLabel NextText MaybeLabel MaybeWhenCondition ";" ;
+
+Exit_statement . Exit_statement ::= MaybeLabel ExitText MaybeLabel MaybeWhenCondition ";" ;
+
+Return_statement . Return_statement ::= MaybeLabel ReturnText MaybeExpression ";" ; 
+
+Null_statement . Null_statement ::= MaybeLabel NullText ";" ;
+
+rules Waveform ::=
+  [Waveform_element]
+  | UnaffectedText ;
+
+-- Value_expression . Value_expression ::= Expression ; 
+
+rules Waveform_element ::= Association_element "AFTER" Association_element 
+                         | Association_element
+                         | NullText "AFTER" Association_element 
+                         | NullText ; 
+separator nonempty Waveform_element "" ;
+-- rules MaybeAfterTime ::= "AFTER" Expression |;
+
+
+Architecture_body . Architecture_body ::=
+  ArchitectureText Identifier OfText Name IsText
+    [ Block_declarative_item ] --Architecture_declarative_part
+  BeginText
+     [Concurrent_statement] --Architecture_statement_part
+  EndText MaybeArchitectureText MaybeSimple_name ";" ;
+-- rules MaybeArchitecture_simple_name ::= Identifier |;
+
+-- Architecture_declarative_part . Architecture_declarative_part ::= [ Block_declarative_item ] ; 
+
+rules Block_declarative_item ::=
+  Subprogram_declaration | Subprogram_body | Type_declaration
+  | Subtype_declaration | Constant_declaration | Signal_declaration
+  | Shared_variable_declaration | File_declaration
+  | Alias_declaration | Component_declaration
+  | Attribute_declaration | Attribute_specification
+  | Configuration_specification | Disconnection_specification
+  | Use_clause | Group_template_declaration
+  | Group_declaration ;
+separator Block_declarative_item "" ;
+
+Configuration_specification . Configuration_specification ::= ForText Component_specification Binding_indication ";" ;
+
+-- Architecture_statement_part . Architecture_statement_part ::= [Concurrent_statement] ;
+
+rules Concurrent_statement ::=
+  Block_statement
+  | Process_statement
+  | Concurrent_procedure_call_statement
+  | Concurrent_assertion_statement
+  | Concurrent_signal_assignment_statement
+  | Component_instantiation_statement
+  | Generate_statement ;
+separator Concurrent_statement "" ;
+
+rules Concurrent_signal_assignment_statement ::=
+    Conditional_signal_assignment
+  | Selected_signal_assignment 
+  | PostponedText Conditional_signal_assignment --Concurrent_signal_assignment_statement ;
+  | Identifier ":" Conditional_signal_assignment ;--Concurrent_signal_assignment_statement ;
+  -- | Conditional_signal_assignment ;--Concurrent_signal_assignment_statement ;
+
+Conditional_signal_assignment . Conditional_signal_assignment ::=
+  Target "<=" Options Conditional_waveforms ";" ;
+
+Options . Options ::= MaybeGuardedText MaybeDelay_mechanism ;
+
+
+Component_instantiation_statement . Component_instantiation_statement ::=
+  Identifier ":"
+    Instantiated_unit
+      MaybeGeneric_map_aspect 
+      MaybePort_map_aspect ";" ;
+
+rules Instantiated_unit ::=
+  Name
+  | ComponentText Name
+  | EntityText Name "(" Identifier ")" 
+  | EntityText Name  
+  | ConfigurationText Name;
+  
+-- rules MaybeArchitecture_identifier ::= "(" Architecture_identifier ")" ;
+
+
+Selected_signal_assignment . Selected_signal_assignment ::=
+  WithText Expression SelectText
+    Identifier "<=" Options [WaveChoice] ";" ;
+    -- Target "<=" Options Selected_waveforms ";" ;
+-- Selected_waveforms . Selected_waveforms ::= [WaveChoice] ;
+WaveChoice . WaveChoice ::= Waveform WhenText [Choice] ;
+separator WaveChoice "," ;
+
+Conditional_waveforms . Conditional_waveforms ::= [WaveformElse] Waveform MaybeWhenCondition ;
+WaveformElse . WaveformElse ::= Waveform MaybeWhenCondition ElseText;
+separator WaveformElse "" ;
+
+
+Block_statement_label . Block_statement_label ::= Identifier ;
+Block_statement . Block_statement ::=
+  Identifier ":"
+    BlockText MaybeGuard_expression IsText
+      Block_header
+      [Block_declarative_item]
+    BeginText
+      Block_statement_part
+    EndText BlockText MaybeLabel ";" ;
+
+rules MaybeGuard_expression ::= "(" Expression ")" ;
+
+-- Block_header . Block_header ::= MaybeGeneric_clause_Map MaybePort_clause_map ;
+rules Block_header ::= Generic_clause
+                       | Generic_clause Generic_map_aspect ";"
+                       | Port_clause
+                       | Port_clause Port_map_aspect ";" |
+                       ;
+
+Block_statement_part . Block_statement_part ::= [Concurrent_statement] ;
+
+-- rules MaybeGeneric_clause_Map ::= Generic_clause MaybeGeneric_map_aspect |;
+-- rules MaybeGeneric_map_aspect ::= Generic_map_aspect ";" |;
+
+-- rules MaybePort_clause_map ::= Port_clause MaybePort_clause_map |;
+-- rules MaybePort_clause_map ::= Port_map_aspect|;
+
+Generate_statement . Generate_statement ::=
+    Generation_scheme GenerateText
+      MaybeBlock_declarative_item
+      [Concurrent_statement]
+    EndText GenerateText MaybeLabel ";" ;
+LabeledGenerate_statement . Generate_statement ::= Identifier ":" Generate_statement ;
+
+rules MaybeBlock_declarative_item ::= [ Block_declarative_item ] BeginText |;
+
+
+rules Generation_scheme ::=
+  ForText Identifier InText Association_element --Discrete_range
+  | IfText Expression ;
+
+-- Block_declarative_part . Block_declarative_part ::= [Block_declarative_item];
+
+
+
+Package_body . Package_body ::=
+  PackageText BodyText Identifier IsText -- check what body should be
+    Package_body_declarative_part
+  EndText MaybePackageBodyText MaybeSimple_name ";" ;
+
+rules MaybePackageBodyText  ::= PackageText BodyText |;
+
+-- rules MaybePackage_simple_name ::= Identifier |;
+
+Package_body_declarative_part . Package_body_declarative_part ::= [Package_body_declarative_item] ;
+
+rules Package_body_declarative_item ::=
+  Subprogram_declaration
+  | Subprogram_body
+  | Type_declaration
+  | Subtype_declaration
+  | Constant_declaration
+  | Shared_variable_declaration
+  | File_declaration
+  | Alias_declaration
+  | Use_clause
+  | Group_template_declaration
+  | Group_declaration ;
+separator Package_body_declarative_item "" ;
+
+
+
+
+
+
+
+rules KeyWords ::=EndText | IsText
+                 | InText | BodyText | ConstantText
+                 | SubtypeText | TypeText | SignalText
+                 | MapText | RegisterText | WaveformText
+                 | BusText | SharedText
+                 | VariableText | FileText | AliasText
+                 | ComponentText | AttributeText | GuardedText
+                 | OfText | DisconnectText | AfterText
+                 | GroupText | UseText | PureText
+                 | ImpureText | FunctionText | ReturnText | DowntoText
+                 | ToText | WithText | UnitsText | RecordText | ArrayText
+                 | OpenText | GenericText | PortText | OthersText | AllText
+                 | RangeText | LibraryText | ConfigurationText
+                 | PostponedText | EntityText
+                 | ForText | BeginText | AssertText | ReportText | ProcessText
+                 | SeverityText | ProcedureText | WaitText
+                 | IfText | ThenText | ElsifText
+                 | ElseText | CaseText | LoopText
+                 | WhenText | NullText
+                 | OnText | UntilText | TransportText
+                 | RejectText | InertialText | WhileText
+                 | NextText | UnaffectedText | ExitText | SelectText
+                 | ArchitectureText | GenerateText | BlockText | NotText
+                 | NewText | AbsText | RemText | ModText ;
+                
